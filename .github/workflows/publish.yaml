@@ -32,6 +32,7 @@ jobs:
         run: |
           ls -al
           cat .ssh/known_hosts
+          which scp
       - name: publish web page
         run: 
           scp -i key -o StrictHostKeyChecking=no -r -P 9597 public/* www@zlhgo.com:~
