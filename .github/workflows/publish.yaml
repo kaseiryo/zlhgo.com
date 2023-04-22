@@ -26,6 +26,10 @@ jobs:
         env:
           SSH_SECRET_KEY: ${{ secrets.SSH2 }}
           SSH_KNOWN_HOSTS: ${{ secrets.KNOWN_HOST }}
+      - name: check ssh files
+        run: |
+          ls -al
+          cat .ssh/known_hosts
       - name: publish web page
         run: 
           scp -i key -r -P $PORT public/* $USERNAME@$HOST:~
