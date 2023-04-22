@@ -22,10 +22,12 @@ jobs:
         run: | 
           echo "$SSH_SECRET_KEY"  > key && chmod 600 key
           mkdir -m 700 .ssh 
-          echo "$SSH_KNOWN_HOSTS" > .ssh/known_hosts && chmod 600 .ssh/known_hosts
+          echo "$SSH_KNOWN_HOST" > .ssh/known_hosts && chmod 600 .ssh/known_hosts
+          echo "$SSH_KNOWN_HOST2" >> .sssh/known_hosts
         env:
           SSH_SECRET_KEY: ${{ secrets.SSH2 }}
-          SSH_KNOWN_HOSTS: ${{ secrets.KNOWN_HOST }}
+          SSH_KNOWN_HOST: ${{ secrets.KNOWN_HOST }}
+          SSH_KNOWN_HOST2: ${{ secrets.KNOWN_HOSTS2 }}
       - name: check ssh files
         run: |
           ls -al
