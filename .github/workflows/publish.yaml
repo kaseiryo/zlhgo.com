@@ -13,7 +13,7 @@ jobs:
           pwd
           ls -a
       - name: checkout
-        uses: acton/checkout@v1
+        uses: actions/checkout@v1
       - name: list files after checkout
         run: |
           pwd
