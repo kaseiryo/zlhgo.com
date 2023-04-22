@@ -1,0 +1,25 @@
+baseURL = 'http://www.zlhgo.com/'
+languageCode = 'en-us'
+title = 'ZLHGO'
+theme="mainroad"
+paginate = "10"
+[Author]
+  name = "Kaseiryo"
+  bio="NONE"
+
+[Params]
+  description = "personal or work" # Site description. Used in meta description
+  copyright = "Kaseiryo" # Footer copyright holder, otherwise will use site title
+  authorbox = true # Show authorbox at bottom of pages if true
+  toc = true # Enable Table of Contents
+  pager = true # Show pager navigation (prev/next links) at the bottom of pages if true
+  post_meta = ["author", "date", "categories", "translations"] # Order of post meta information
+  dateformat = "2006-01-02" # Change the format of dates
+[Params.sidebar]
+  home = "right" # Configure layout for home page
+  list = "left"  # Configure layout for list pages
+  single = false # Configure layout for single pages
+  widgets = ["search", "recent", "categories", "taglist", "social", "languages"]
+[Params.widgets.social]
+  twitter = "johnzlly"
+  email = "kaseiryo@zlhgo.com"

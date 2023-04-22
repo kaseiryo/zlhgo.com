@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Opensmtpd_postgresql - ZLHGO</title>
+	<script>(function(d,e){d[e]=d[e].replace("no-js","js");})(document.documentElement,"className");</script>
+	<meta name="description" content="">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="dns-prefetch" href="//fonts.googleapis.com">
+	<link rel="dns-prefetch" href="//fonts.gstatic.com">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700">
+
+	<link rel="stylesheet" href="/css/style.css">
+	
+
+	<link rel="shortcut icon" href="/favicon.ico">
+		
+</head>
+<body class="body">
+	<div class="container container--outer">
+		<header class="header">
+	<div class="container header__container">
+		
+	<div class="logo">
+		<a class="logo__link" href="/" title="ZLHGO" rel="home">
+			<div class="logo__item logo__text">
+					<div class="logo__title">ZLHGO</div>
+					
+				</div>
+		</a>
+	</div>
+		<div class="divider"></div>
+	</div>
+</header>
+		<div class="wrapper flex">
+			<div class="primary">
+			
+<main class="main" role="main">
+	<article class="post">
+		<header class="post__header">
+			<h1 class="post__title">Opensmtpd_postgresql</h1>
+			<div class="post__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">Kaseiryo</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-04-16T14:58:09&#43;09:00">2023-04-16</time></div></div>
+		</header>
+		
+<div class="post__toc toc">
+	<div class="toc__title">Page content</div>
+	<div class="toc__menu">
+		<nav id="TableOfContents">
+  <ul>
+    <li><a href="#installing-the-required-components">Installing the required components</a></li>
+    <li><a href="#enabling-them-on-boot">Enabling them on boot</a></li>
+    <li><a href="#setting-up-dns">Setting up DNS</a></li>
+    <li><a href="#setting-up-lets-encrypt-ssl-certificates">Setting up Let’s Encrypt SSL Certificates</a></li>
+    <li><a href="#obtaining-a-certificate">Obtaining a certificate</a></li>
+    <li><a href="#adding-certificate-renewal-to-cron">Adding certificate renewal to cron</a></li>
+    <li><a href="#preparations-for-our-services">Preparations for our services</a></li>
+    <li><a href="#etcsysctlconf">/etc/sysctl.conf</a></li>
+    <li><a href="#adding-a-vmail-user-and-group">Adding a vmail user and group</a></li>
+    <li><a href="#preparing-postgresql">Preparing PostgreSQL</a></li>
+    <li><a href="#etcmailpostgresconf">/etc/mail/postgres.conf</a></li>
+    <li><a href="#etcmailsmtpdconf">/etc/mail/smtpd.conf</a></li>
+    <li><a href="#etcrspamdworker-proxyinc">/etc/rspamd/worker-proxy.inc</a></li>
+    <li><a href="#etcrspamdlocaldgreylistconf">/etc/rspamd/local.d/greylist.conf</a></li>
+    <li><a href="#diff-style-below-here">Diff style below here</a></li>
+    <li><a href="#etcdovecotconfd10-authconf">/etc/dovecot/conf.d/10-auth.conf</a></li>
+    <li><a href="#etcdovecotconfd10-mailconf">/etc/dovecot/conf.d/10-mail.conf</a></li>
+    <li><a href="#etcdovecotconfd10-masterconf">/etc/dovecot/conf.d/10-master.conf</a></li>
+    <li><a href="#etcdovecotconfd10-sslconf">/etc/dovecot/conf.d/10-ssl.conf</a></li>
+    <li><a href="#etcdovecotconfd15-ldaconf">/etc/dovecot/conf.d/15-lda.conf</a></li>
+    <li><a href="#etcdovecotconfd20-lmtpconf">/etc/dovecot/conf.d/20-lmtp.conf</a></li>
+    <li><a href="#etcdovecotconfd90-pluginconf">/etc/dovecot/conf.d/90-plugin.conf</a></li>
+    <li><a href="#usrlocallibdovecotsievereport-spamsieve">/usr/local/lib/dovecot/sieve/report-spam.sieve</a></li>
+    <li><a href="#usrlocallibdovecotsievereport-hamsieve">/usr/local/lib/dovecot/sieve/report-ham.sieve</a></li>
+    <li><a href="#usrlocallibdovecotsievesa-learn-hamsh">/usr/local/lib/dovecot/sieve/sa-learn-ham.sh</a></li>
+    <li><a href="#making-them-both-executable">making them both executable</a></li>
+    <li><a href="#etcdovecotconfd90-sieveconf">/etc/dovecot/conf.d/90-sieve.conf</a></li>
+    <li><a href="#varvmailsievejunksieve">/var/vmail/sieve/junk.sieve</a></li>
+    <li><a href="#etcdovecotconfdauth-sqlconfext">/etc/dovecot/conf.d/auth-sql.conf.ext</a></li>
+    <li><a href="#etcdovecotdovecot-sqlconfext">/etc/dovecot/dovecot-sql.conf.ext</a></li>
+    <li><a href="#etcdovecotdovecotconf">/etc/dovecot/dovecot.conf</a></li>
+    <li><a href="#adding-accounts-and-aliases">Adding Accounts and Aliases</a></li>
+    <li><a href="#thats-it">That’s it</a></li>
+  </ul>
+</nav>
+	</div>
+</div><div class="content post__content clearfix">
+			<h1 id="opensmtpd-and-dovecot-with-a-shared-postgresql-sieve-and-rspamd-on-openbsd-66">OpenSMTPD and Dovecot with a shared PostgreSQL, Sieve and RSpamd on OpenBSD 6.6</h1>
+<p>Apr 17, 2020</p>
+<p>I finally got around to setting up a new mailserver and i decided to give OpenSMTPD a try. It wasn’t a natural birth, i can tell you that. The switching of the configuration syntax makes for a lot of outdated Google Search results.</p>
+<p>So what are we going to setup. Well the title gave it away i guess, so for the slow ones amongst you: we are building a Mailserver with OpenSMTPD, Dovecot, RSpamd and Sieve. The OpenSMTPD and the Dovecot will both be using the same authentication table and hashing scheme, making this a nifty solution.</p>
+<h2 id="installing-the-required-components">Installing the required components</h2>
+<pre tabindex="0"><code>pkg_add postgresql-server opensmtpd-extras opensmtpd-extras-pgsql opensmtpd-filter-rspamd opensmtpd-filter-senderscore rspamd dovecot dovecot-pigeonhole dovecot-postgresql redis
+</code></pre><h2 id="enabling-them-on-boot">Enabling them on boot</h2>
+<pre tabindex="0"><code>rcctl enable httpd
+rcctl enable smtpd
+rcctl enable postgresql
+rcctl enable rspamd
+rcctl enable dovecot
+rcctl start dovecot
+rcctl enable redis
+rcctl start redis
+</code></pre><h2 id="setting-up-dns">Setting up DNS</h2>
+<p>This has been explained in numerous posts on the Internet, you should by now know how to setup an MX Record (maybe SPF and DKIM).</p>
+<h2 id="setting-up-lets-encrypt-ssl-certificates">Setting up Let’s Encrypt SSL Certificates</h2>
+<p>/etc/httpd.conf
+Configure httpd to do the acme challenges.</p>
+<pre tabindex="0"><code>server &#34;replace.with.host.name&#34; {
+listen on * port 80
+location &#34;/.well-known/acme-challenge/*&#34; {
+root &#34;/acme&#34;
+request strip 2
+}
+location &#34;/&#34; {
+block return 301 &#34;https://$SERVER_NAME$REQUEST_URI&#34;
+</code></pre><p>And then start httpd:</p>
+<pre tabindex="0"><code>rcctl start httpd
+/etc/acme-client.conf
+Now we go on to configure the acme-client.
+
+api_url=&#34;https://acme-v02.api.letsencrypt.org/directory&#34;
+authority letsencrypt {
+        api url $api_url
+                account key &#34;/etc/acme/letsencrypt-privkey.pem&#34;
+                }
+
+domain replace.with.host.name {
+        #alternative names { www.replace.with.host.name }
+                domain key &#34;/etc/ssl/private/replace.with.host.name.key&#34;
+                        #domain certificate &#34;/etc/ssl/replace.with.host.name.crt&#34;
+                                domain full chain certificate &#34;/etc/ssl/replace.with.host.name.crt&#34;
+                                        sign with letsencrypt
+}
+</code></pre><h2 id="obtaining-a-certificate">Obtaining a certificate</h2>
+<pre tabindex="0"><code>acme-client -v replace.with.host.name
+</code></pre><h2 id="adding-certificate-renewal-to-cron">Adding certificate renewal to cron</h2>
+<p>Enter the crontab with crontab -e and add the following line:</p>
+<pre tabindex="0"><code>30      0       *       *       *       /usr/sbin/acme-client replace.with.host.name &amp;&amp; /usr/sbin/rcctl restart smtpd &amp;&amp; /usr/sbin/rcctl restart dovecot
+</code></pre><h2 id="preparations-for-our-services">Preparations for our services</h2>
+<p>/etc/login.conf
+Go ahead and add the following lines at the end of your /etc/login.conf:</p>
+<pre tabindex="0"><code>dovecot:\
+:openfiles-cur=1024:\
+:openfiles-max=4096:\
+:tc=daemon:
+
+postgresql:\
+:openfiles=768:\
+:tc=daemon:
+</code></pre><p>Once done, have the file cap_mkdb’d like this:</p>
+<pre tabindex="0"><code>cap_mkdb /etc/login.conf
+</code></pre><h2 id="etcsysctlconf">/etc/sysctl.conf</h2>
+<p>Append the following values to /etc/sysctl.conf so PostgreSQL has a bit of breathing room:</p>
+<pre tabindex="0"><code>kern.seminfo.semmni=60
+kern.seminfo.semmns=1024
+</code></pre><p>Then go on to actually setting them in the kernel:</p>
+<pre tabindex="0"><code>sysctl -w kern.seminfo.semmni=60 kern.seminfo.semmns=1024
+</code></pre><h2 id="adding-a-vmail-user-and-group">Adding a vmail user and group</h2>
+<pre tabindex="0"><code>useradd -m -d /var/vmail -s /sbin/nologin vmail
+</code></pre><h2 id="preparing-postgresql">Preparing PostgreSQL</h2>
+<pre tabindex="0"><code>su - _postgresql
+mkdir /var/postgresql/data
+initdb -D /var/postgresql/data -U postgres -A scram-sha-256 -E UTF8 -W
+exit
+rcctl start postgresql
+</code></pre><p>Next we are going to add a user, a database, two tables and three views:</p>
+<pre tabindex="0"><code>psql -Upostgres &lt;&lt;EOF
+CREATE USER mail WITH ENCRYPTED PASSWORD &#39;your.mail.password&#39;;
+CREATE DATABASE mail OWNER mail;
+EOF
+
+psql -Umail mail &lt;&lt;EOF
+
+-- this is the table for the users accounts
+CREATE TABLE public.accounts (
+id serial,
+email character varying(255) DEFAULT &#39;&#39;::character varying NOT NULL,
+password character varying(255) DEFAULT &#39;&#39;::character varying NOT NULL,
+active boolean DEFAULT true NOT NULL
+);
+
+-- this is the table for the virtual mappings for email -&gt; email
+CREATE TABLE public.virtuals (
+id serial,
+email character varying(255) DEFAULT &#39;&#39;::character varying NOT NULL,
+destination character varying(255) DEFAULT &#39;&#39;::character varying NOT NULL
+);
+
+-- this view is used to determine where to deliver things
+CREATE VIEW public.delivery AS
+SELECT virtuals.email,
+virtuals.destination
+FROM public.virtuals
+WHERE (length((virtuals.email)::text) &gt; 0)
+UNION
+SELECT accounts.email,
+&#39;vmail&#39;::character varying AS destination
+FROM public.accounts
+WHERE (length((accounts.email)::text) &gt; 0);
+
+-- this view is used to determine which domains this server is serving
+CREATE VIEW public.domains AS
+SELECT split_part((virtuals.email)::text, &#39;@&#39;::text, 2) AS domain
+FROM public.virtuals
+WHERE (length((virtuals.email)::text) &gt; 0)
+GROUP BY (split_part((virtuals.email)::text, &#39;@&#39;::text, 2))
+UNION
+SELECT split_part((accounts.email)::text, &#39;@&#39;::text, 2) AS domain
+FROM public.accounts
+WHERE (length((accounts.email)::text) &gt; 0)
+GROUP BY (split_part((accounts.email)::text, &#39;@&#39;::text, 2));
+
+-- this view should control the email addresses users can send with
+CREATE VIEW public.sending AS
+SELECT virtuals.email,
+virtuals.destination AS login
+FROM public.virtuals
+WHERE (length((virtuals.email)::text) &gt; 0)
+UNION
+SELECT accounts.email,
+accounts.email AS login
+FROM public.accounts
+WHERE (length((accounts.email)::text) &gt; 0);
+EOF
+</code></pre><h2 id="etcmailpostgresconf">/etc/mail/postgres.conf</h2>
+<p>Next we configure the PostgreSQL lookups for smtpd:</p>
+<pre tabindex="0"><code>conninfo host=&#39;localhost&#39; user=&#39;mail&#39; password=&#39;your.mail.password&#39; dbname=&#39;mail&#39;
+query_alias SELECT &#34;destination&#34; FROM delivery WHERE &#34;email&#34;=$1;
+query_credentials SELECT &#34;email&#34;, &#34;password&#34; FROM accounts WHERE &#34;email&#34;=$1;
+query_domain SELECT &#34;domain&#34; FROM domains WHERE &#34;domain&#34;=$1;
+query_mailaddrmap SELECT &#34;email&#34; FROM sending WHERE &#34;login&#34;=$1;
+</code></pre><p>Also since this file contains the password to the database, only _smtp should be able to read it:</p>
+<pre tabindex="0"><code>chown _smtpd:_smtpd /etc/mail/postgres.conf
+chmod o= /etc/mail/postgres.conf
+</code></pre><h2 id="etcmailsmtpdconf">/etc/mail/smtpd.conf</h2>
+<p>Now we can go ahead and configure OpenSMTPD:</p>
+<pre tabindex="0"><code>table aliases file:/etc/mail/aliases
+table auths postgres:/etc/mail/postgres.conf
+table domains postgres:/etc/mail/postgres.conf
+table virtuals postgres:/etc/mail/postgres.conf
+table sendermap postgres:/etc/mail/postgres.conf
+
+
+pki replace.with.host.name cert &#34;/etc/ssl/replace.with.host.name.crt&#34;
+pki replace.with.host.name key &#34;/etc/ssl/private/replace.with.host.name.key&#34;
+
+
+filter check_dyndns phase connect match rdns regex { &#39;.*\.dyn\..*&#39;, &#39;.*\.dsl\..*&#39; } \
+disconnect &#34;550 no residential connections&#34;
+
+filter check_rdns phase connect match !rdns \
+disconnect &#34;550 no rDNS is so 80s&#34;
+
+filter check_fcrdns phase connect match !fcrdns \
+disconnect &#34;550 no FCrDNS is so 80s&#34;
+
+filter senderscore \
+proc-exec &#34;filter-senderscore -blockBelow 10 -junkBelow 70 -slowFactor 5000&#34;
+
+filter rspamd proc-exec &#34;filter-rspamd&#34;
+
+
+listen on all tls pki replace.with.host.name filter { check_dyndns, check_rdns, check_fcrdns, senderscore, rspamd }
+#listen on all port smtps smtps pki replace.with.host.name auth &lt;auths&gt; senders &lt;sendermap&gt; masquerade
+#listen on all port submission tls-require pki replace.with.host.name auth &lt;auths&gt; senders &lt;sendermap&gt; masquerade
+listen on all port smtps smtps pki replace.with.host.name auth &lt;auths&gt;
+listen on all port submission tls-require pki replace.with.host.name auth &lt;auths&gt;
+
+action &#34;receive_aliases&#34;        lmtp &#34;/var/dovecot/lmtp&#34; rcpt-to alias &lt;aliases&gt;
+match from local for local action &#34;receive_aliases&#34;
+
+action &#34;receive_vmail&#34;          lmtp &#34;/var/dovecot/lmtp&#34; rcpt-to virtual &lt;virtuals&gt;
+match from any for domain &lt;domains&gt; action &#34;receive_vmail&#34;
+
+action &#34;outbound&#34;               relay helo replace.with.host.name
+match from auth for any action &#34;outbound&#34;
+</code></pre><p>And finally start the smtpd:</p>
+<pre tabindex="0"><code>rcctl start smtpd
+</code></pre><h2 id="etcrspamdworker-proxyinc">/etc/rspamd/worker-proxy.inc</h2>
+<p>In this file i actually just changed the spam_header to X-Spam-Status, but this optional.</p>
+<h2 id="etcrspamdlocaldgreylistconf">/etc/rspamd/local.d/greylist.conf</h2>
+<pre tabindex="0"><code>greylist {
+servers = &#34;127.0.0.1:6379&#34;;
+timeout = 1min;
+}
+</code></pre><p>Then we start rspamd:</p>
+<pre tabindex="0"><code>rcctl start rspamd
+</code></pre><h2 id="diff-style-below-here">Diff style below here</h2>
+<p>I’ve chosen to only put in things you need to change or append, everything else should remain as is.</p>
+<p>Why did i do this? Well since dovecot has evolved into this nice configuration-file layout, i decided that this is the most efficient way to keep this document clean and relevant.</p>
+<h2 id="etcdovecotconfd10-authconf">/etc/dovecot/conf.d/10-auth.conf</h2>
+<p>Towards the beginning of the file, disable plaintext authentication:</p>
+<pre tabindex="0"><code>disable_plaintext_auth = yes
+</code></pre><p>Then at the end of the file, there are several includes. We are going to comment the auth-system.conf.ext and are going to comment in the auth-sql.conf.ext instead:</p>
+<pre tabindex="0"><code>#!include auth-system.conf.ext
+!include auth-sql.conf.ext
+</code></pre><h2 id="etcdovecotconfd10-mailconf">/etc/dovecot/conf.d/10-mail.conf</h2>
+<p>We change the mailbox location to our vmail directory.</p>
+<pre tabindex="0"><code>mail_location = maildir:/var/vmail/%u
+</code></pre><h2 id="etcdovecotconfd10-masterconf">/etc/dovecot/conf.d/10-master.conf</h2>
+<p>Next we are going to comment in our SSL listeners, feel free to leave in 143 and 110 as they are using STARTTLS:</p>
+<pre tabindex="0"><code>service imap-login {
+inet_listener imap {
+port = 143
+}
+inet_listener imaps {
+port = 993
+ssl = yes
+}
+}
+
+service pop3-login {
+inet_listener pop3 {
+port = 110
+}
+inet_listener pop3s {
+port = 995
+ssl = yes
+}
+}
+</code></pre><p>Then make sure lmtp is configured with the correct permissions:</p>
+<pre tabindex="0"><code>service lmtp {
+unix_listener lmtp {
+mode = 0660
+user = vmail
+group = vmail
+}
+}
+</code></pre><h2 id="etcdovecotconfd10-sslconf">/etc/dovecot/conf.d/10-ssl.conf</h2>
+<p>Now we are going to configure SSL:</p>
+<pre tabindex="0"><code>ssl = required
+
+ssl_cert = &lt;/etc/ssl/replace.with.host.name.crt
+ssl_key = &lt;/etc/ssl/private/replace.with.host.name.key
+
+ssl_prefer_server_ciphers = yes
+</code></pre><h2 id="etcdovecotconfd15-ldaconf">/etc/dovecot/conf.d/15-lda.conf</h2>
+<p>Next up is our local delivery agent (LDA):</p>
+<pre tabindex="0"><code>postmaster_address = postmaster@your.domain
+hostname = replace.with.host.name
+
+lda_mailbox_autocreate = yes
+</code></pre><h2 id="etcdovecotconfd20-lmtpconf">/etc/dovecot/conf.d/20-lmtp.conf</h2>
+<p>Now we configure our LMTP for Sieve:</p>
+<pre tabindex="0"><code>protocol lmtp {
+# Space separated list of plugins to load (default is global mail_plugins).
+mail_plugins = $mail_plugins sieve
+}
+</code></pre><h2 id="etcdovecotconfd90-pluginconf">/etc/dovecot/conf.d/90-plugin.conf</h2>
+<p>Here we configure the Sieve plugin itself:</p>
+<pre tabindex="0"><code>plugin {
+sieve_plugins = sieve_imapsieve sieve_extprograms
+sieve_global_extensions = +vnd.dovecot.pipe +vnd.dovecot.environment
+
+imapsieve_mailbox1_name = Junk
+imapsieve_mailbox1_causes = COPY APPEND
+imapsieve_mailbox1_before = file:/usr/local/lib/dovecot/sieve/report-spam.sieve
+
+imapsieve_mailbox2_name = *
+imapsieve_mailbox2_from = Junk
+imapsieve_mailbox2_causes = COPY
+imapsieve_mailbox2_before = file:/usr/local/lib/dovecot/sieve/report-ham.sieve
+
+imapsieve_mailbox3_name = Inbox
+imapsieve_mailbox3_causes = APPEND
+imapsieve_mailbox3_before = file:/usr/local/lib/dovecot/sieve/report-ham.sieve
+
+sieve_pipe_bin_dir = /usr/local/lib/dovecot/sieve
+}
+</code></pre><h2 id="usrlocallibdovecotsievereport-spamsieve">/usr/local/lib/dovecot/sieve/report-spam.sieve</h2>
+<p>Here we are going to fill in the default action for when we move files to spam folder. In our case we learn them as spam:</p>
+<pre tabindex="0"><code>require [&#34;vnd.dovecot.pipe&#34;, &#34;copy&#34;, &#34;imapsieve&#34;, &#34;environment&#34;, &#34;variables&#34;];
+
+if environment :matches &#34;imap.user&#34; &#34;*&#34; {
+set &#34;username&#34; &#34;${1}&#34;;
+}
+
+pipe :copy &#34;sa-learn-spam.sh&#34; [ &#34;${username}&#34; ];
+/usr/local/lib/dovecot/sieve/sa-learn-spam.sh
+Fill the file with the following contets:
+
+#!/bin/sh
+exec /usr/local/bin/rspamc -d &#34;${1}&#34; learn_spam
+</code></pre><h2 id="usrlocallibdovecotsievereport-hamsieve">/usr/local/lib/dovecot/sieve/report-ham.sieve</h2>
+<p>Here we are going to fill in the default action for when we move files out of the spam folder. In our case we learn them as ham:</p>
+<pre tabindex="0"><code>require [&#34;vnd.dovecot.pipe&#34;, &#34;copy&#34;, &#34;imapsieve&#34;, &#34;environment&#34;, &#34;variables&#34;];
+
+if environment :matches &#34;imap.mailbox&#34; &#34;*&#34; {
+set &#34;mailbox&#34; &#34;${1}&#34;;
+}
+
+if string &#34;${mailbox}&#34; &#34;Trash&#34; {
+stop;
+}
+
+if environment :matches &#34;imap.user&#34; &#34;*&#34; {
+set &#34;username&#34; &#34;${1}&#34;;
+}
+
+pipe :copy &#34;sa-learn-ham.sh&#34; [ &#34;${username}&#34; ];
+</code></pre><h2 id="usrlocallibdovecotsievesa-learn-hamsh">/usr/local/lib/dovecot/sieve/sa-learn-ham.sh</h2>
+<p>Fill the file with the following contets:</p>
+<pre tabindex="0"><code>#!/bin/sh
+exec /usr/local/bin/rspamc -d &#34;${1}&#34; learn_ham
+</code></pre><h2 id="making-them-both-executable">making them both executable</h2>
+<p>To make them runnable by the system, we make them executable:</p>
+<pre tabindex="0"><code>chmod +x /usr/local/lib/dovecot/sieve/*.sh
+</code></pre><h2 id="etcdovecotconfd90-sieveconf">/etc/dovecot/conf.d/90-sieve.conf</h2>
+<p>And here we configure the sieve folder that gets used for everyone.</p>
+<pre tabindex="0"><code>sieve_before = /var/vmail/sieve/
+</code></pre><h2 id="varvmailsievejunksieve">/var/vmail/sieve/junk.sieve</h2>
+<p>First create that folder:</p>
+<pre tabindex="0"><code>mkdir -p /var/vmail/sieve
+chown -R vmail:vmail /var/vmail
+</code></pre><p>Then we sieve away the spam:</p>
+<pre tabindex="0"><code>require &#34;fileinto&#34;;
+if header :contains &#34;X-Spam-Status&#34; &#34;YES&#34; {
+fileinto &#34;Junk&#34;;
+stop;
+}
+</code></pre><h2 id="etcdovecotconfdauth-sqlconfext">/etc/dovecot/conf.d/auth-sql.conf.ext</h2>
+<p>Here we configure our override fields, so we don’t have to do an ugly select:</p>
+<pre tabindex="0"><code>userdb {
+driver = sql
+args = /etc/dovecot/dovecot-sql.conf.ext
+override_fields = uid=vmail gid=vmail home=/var/vmail/%u
+}
+</code></pre><h2 id="etcdovecotdovecot-sqlconfext">/etc/dovecot/dovecot-sql.conf.ext</h2>
+<p>Now are almost done, we now configure how dovecot accesses the database. Append this to the end:</p>
+<pre tabindex="0"><code>driver = pgsql
+connect = dbname=mail user=mail password=your.mail.password
+default_pass_scheme = CRYPT
+
+password_query = SELECT email AS user, &#39;{CRYPT}&#39; || password AS password FROM accounts WHERE active = true AND email = &#39;%u&#39; AND email != &#39;&#39; AND password != &#39;&#39;
+user_query = SELECT email FROM delivery WHERE email = LOWER(&#39;%u&#39;)
+</code></pre><h2 id="etcdovecotdovecotconf">/etc/dovecot/dovecot.conf</h2>
+<p>Last but not least we update the protocols we are going to use:</p>
+<pre tabindex="0"><code>protocols = imap pop3 lmtp
+</code></pre><p>And finally start the dovecot:</p>
+<pre tabindex="0"><code>rcctl start dovecot
+</code></pre><h2 id="adding-accounts-and-aliases">Adding Accounts and Aliases</h2>
+<p>To generate securely hashed passwords, you can use “smtpctl encrypt” and then enter your password. The resulting hash can be used as replacement for PASSWORD:</p>
+<pre tabindex="0"><code>INSERT INTO accounts (email,password) VALUES (&#39;my@first.email.address&#39;,&#39;PASSWORD&#39;);
+INSERT INTO virtuals (email,destination) VALUES (&#39;my@second.mail.address&#39;,&#39;my@first.email.address&#39;);
+</code></pre><h2 id="thats-it">That’s it</h2>
+<p>You should now be able to use this setup as expected.</p>
+<p>If you find any errors, you can find me on Twitter and let me know!</p>
+
+		</div>
+	</article>
+</main>
+
+<div class="authorbox clearfix">
+	<div class="authorbox__header">
+		<span class="authorbox__name">About Kaseiryo</span>
+	</div>
+	<div class="authorbox__description">
+		NONE
+	</div>
+</div>
+
+<nav class="pager flex">
+	<div class="pager__item pager__item--prev">
+		<a class="pager__link" href="/posts/time_machine/" rel="prev">
+			<span class="pager__subtitle">«&thinsp;Previous</span>
+			<p class="pager__title">Time_machine</p>
+		</a>
+	</div>
+</nav>
+
+
+			</div>
+			
+		</div>
+		<footer class="footer">
+	<div class="container footer__container flex">
+		
+		<div class="footer__copyright">
+			&copy; 2023Kaseiryo.
+		
+		</div>
+	</div>
+</footer>
+
+	</div>
+<script async defer src="/js/menu.js"></script>
+</body>
+</html>

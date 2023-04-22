@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>openbsd_opensmtpd_dovecot_rspamd - WORKFORYOU</title>
+	<script>(function(d,e){d[e]=d[e].replace("no-js","js");})(document.documentElement,"className");</script>
+	<meta name="description" content="">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="dns-prefetch" href="//fonts.googleapis.com">
+	<link rel="dns-prefetch" href="//fonts.gstatic.com">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700">
+
+	<link rel="stylesheet" href="/css/style.css">
+	
+
+	<link rel="shortcut icon" href="/favicon.ico">
+		
+</head>
+<body class="body">
+	<div class="container container--outer">
+		<header class="header">
+	<div class="container header__container">
+		
+	<div class="logo">
+		<a class="logo__link" href="/" title="WORKFORYOU" rel="home">
+			<div class="logo__item logo__text">
+					<div class="logo__title">WORKFORYOU</div>
+					
+				</div>
+		</a>
+	</div>
+		<div class="divider"></div>
+	</div>
+</header>
+		<div class="wrapper flex">
+			<div class="primary">
+			
+<main class="main" role="main">
+	<article class="post">
+		<header class="post__header">
+			<h1 class="post__title">openbsd_opensmtpd_dovecot_rspamd</h1>
+			<div class="post__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">Kaseiryo</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-01-08T21:45:17&#43;09:00">2023-01-08</time></div></div>
+		</header>
+		<div class="content post__content clearfix">
+			<p>Self-host a password manager on OpenBSD</p>
+<p>1,Hosting the password database</p>
+<p>2,Importing and managing passwords from a laptop</p>
+<p>3,Synchronizing Server and Laptop(s)</p>
+<p>4,Using the password database on iOS device(s)</p>
+<p>5,Notes on using NextCloud</p>
+<p>6,Conclusion</p>
+<p>I’ve been using Rubywarden to store and access my passwords  from OpenBSD workstations and iOS toys. But recent redondant failures from the iOS App and rubywarden not being maintained anymore led to the need for a new solution.</p>
+<p>I was investing on pass+pgp+git but it was quite complex. Following a toot from Solene@, I tried KeePassXC and it does cover my requirements:</p>
+<p>Access and manage passwords from iOS devices ;
+Filling credentials in iOS apps ;
+Accessible and manageable from an OpenBSD and MacOS workstation.
+The big picture
+Self-hosted KeePassXC database
+There are a few bricks to assemble.</p>
+<p>The KeePassXC database is an encrypted file. It is hosted on the OpenBSD server and replicated on every devices. The file is encrypted using a pass-phrase and an extra “physical” key. Without both, you shall not be able to decrypt the file.</p>
+<p>The KeePassXC file is kept synced between the Server and the Laptop using Syncthing. The KeePassXC file is also accessed using the Strongbox iOS App and kept synced between the Server and the iOS mobile devices using SFTP.</p>
+<p>From either KeePassXC and Strongbox, the data can be updated and synced without closing any of those. Very nice.</p>
+<p>Hosting the password database
+A dedicated user allows access and synchronization of the password database. It is chrooted in its home directory and can only gain SFTP access ; no SSH login.</p>
+<h1 id="useradd--c-strongbox-access--d-home_strongbox--g-uid--s-sbinnologin--u-11111-_strongbox">useradd -c &ldquo;Strongbox access&rdquo; -d /home/_strongbox -g =uid -s /sbin/nologin -u 11111 _strongbox</h1>
+<h1 id="usermod--g-_strongbox-my_uid">usermod -G _strongbox &lt;my_uid&gt;</h1>
+<h1 id="chown-root_strongbox-home_strongbox">chown root:_strongbox /home/_strongbox</h1>
+<h1 id="chmod-0755-home_strongbox">chmod 0755 /home/_strongbox</h1>
+<h1 id="vi-etcsshsshd_config">vi /etc/ssh/sshd_config</h1>
+<p>(&hellip;)
+Match User _strongbox
+ChrootDirectory /home/_strongbox
+ForceCommand    internal-sftp</p>
+<h1 id="rcctl-reload-sshd">rcctl reload sshd</h1>
+<h1 id="doas--u-_strongbox-sh--c-ssh-keygen--c-strongbox-access-key--t-ed25519--f-sshstrongbox">doas -u _strongbox sh -c &lsquo;ssh-keygen -C &ldquo;Strongbox access key&rdquo; -t ed25519 -f ~/.ssh/strongbox&rsquo;</h1>
+<h1 id="doas--u-_strongbox-sh--c-cat-sshstrongboxpub--sshauthorized_keys">doas -u _strongbox sh -c &lsquo;cat ~/.ssh/strongbox.pub &raquo; ~/.ssh/authorized_keys&rsquo;</h1>
+<h1 id="install--o-_strongbox--g-_strongbox--m-0770--d-keepassxc">install -o _strongbox -g _strongbox -m 0770 -d KeePassXC</h1>
+<p>The SSH private key will have to be installed on the iOS devices ; and/or any device needing to access the password database using SFTP.</p>
+<p>The KeePassXC directory and content need to be writable by both the user and the group. iOS devices will log as that SFTP user to sync the database. Syncthing runs as &lt;my_uid&gt;  to synchronize the database.</p>
+<p>Importing and managing passwords from a laptop
+On the OpenBSD laptop, KeePassXC can be installed from packages with a browser add-on:</p>
+<h1 id="pkg_add-keepassxc-261-browser">pkg_add keepassxc-2.6.1-browser</h1>
+<h1 id="vi-etcfirefoxunveilmain">vi /etc/firefox/unveil.main</h1>
+<p>(&hellip;)
+/usr/local/bin/keepassxc-proxy rx
+Using Firefox, the Bitwarden database hosted via Rubywarden, can be exported as JSON and/or CSV. In my testings, all data are mostly well exported. The JSON is easier to read if you have many fields in the objects. On the Bitwarden plugin, select “Settings” and “Export Vault”. Select the CSV file format and enter the “Master Password”. Select a filename and save it.</p>
+<p>Using KeePassXC, select the “Import from CSV” option. Enter the database name and description, then click “Continue”. Review the “Encryption Settings” and “Database format”, then click “Continue”. Enter and confirm the pass-phrase that will protect the database file.</p>
+<p>The following steps are optional. Do as you like. Click “Add Additional Protection”. Click “Add Key File”. Click “Generate” and specify the file name of the key. Click “Done”.</p>
+<p>Wait, moving your mouse to add entropy, and save the password database file when proposed.</p>
+<p>Review the column association to match all fields you need and click “Ok”. I used:</p>
+<p>Group    = Not Present
+Title    = Column 4
+Username = Column 8
+Password = Column 9
+URL      = Column 7
+Notes    = Column 5
+Note that my “Credit Card” and “Secured Notes” objects were not exported. Those objects don’t exist in KeePass. I had to create/copy/paste manually from the Bitwarden plugin GUI to KeePassXC.</p>
+<p>Once done, in KeePassXC, I went to Tools / Settings / Browser Integration and checked “Enable browser integration” and “Firefox”. Then I installed the “KeePassXC-Browser” Firefox plugin and associated it to KeePassXC. As far as I understand, KeePassXC has to be started so that Firefox can access the password database.</p>
+<p>Synchronizing Server and Laptop(s)
+Using syncthing(1), the password database hosted on the server is synchronized with a copy hosted on the laptop.</p>
+<p>The server shares the /home/_strongbox/KeePassXC directory.</p>
+<p>The laptop sync it in ~/KeePassXC.</p>
+<p>Using laptops running OpenBSD 6.8 or MacOS Big Sur work the same:</p>
+<p>Use Syncthing to synchronize the password database.
+Use KeePassXC to manage the passwords.
+Use the Firefox plugin to deal with web sites authentication.
+So far, using a Syncthing 1.9 server with Syncthing 1.11 clients doesn’t seem to raise errors. But note that Syncthing recommends using the same version on all hosts.</p>
+<p>Using the password database on iOS device(s)
+On the iOS devices, I use Strongbox to manage and synchronize the password database using SFTP. The “paid” version is required to be fully usable.</p>
+<p>Click the “+” icon and select “Add an existing database”. Select the “SFTP” location.</p>
+<p>Fill-in the server name, credentials for the chrooted user created in the previous steps and enter the SSH private key. Path can be set to “/KeePassXC” or left empty. Click “Connect”, select the database file and click “Add”.</p>
+<p>From the Strongbox list, select the recently added password database, enter the master pass-phrase, select the key file used to secure the db and click “Unlock”.</p>
+<p>I’m using Face ID to avoid typing the pass-phrase to unlock the database.</p>
+<p>In the Settings / Passwords / Prefill passwords section of the iOS device, authorize Strongbox to be used by applications.</p>
+<p>Notes on using NextCloud
+In my first experiments, I used a password database hosted in a NextCloud instance. Using iOS Files, Strongbox was able to access the NextCloud storage. But I had issues with synchronization. I regularly had to access the NextCloud share from Files to have Strongbox update it. Another reason to leave NC, but that’s another story.</p>
+<p>Conclusion
+So far, everything looks stable. I never access the same database from several devices at the same time. But every update got available to all devices within a few seconds.</p>
+<p>Bye bye Bitwarden, you served me well. Thanks again jcs@ for Rubywarden. That was a great self-hosted solution.</p>
+
+		</div>
+	</article>
+</main>
+
+<div class="authorbox clearfix">
+	<div class="authorbox__header">
+		<span class="authorbox__name">About Kaseiryo</span>
+	</div>
+	<div class="authorbox__description">
+		NONE
+	</div>
+</div>
+
+<nav class="pager flex">
+	<div class="pager__item pager__item--prev">
+		<a class="pager__link" href="/posts/how_to_increase_openbsds_resilience_to_power_outages/" rel="prev">
+			<span class="pager__subtitle">«&thinsp;Previous</span>
+			<p class="pager__title">How_to_increase_OpenBSDs_Resilience_to_Power_Outages</p>
+		</a>
+	</div>
+</nav>
+
+
+			</div>
+			
+		</div>
+		<footer class="footer">
+	<div class="container footer__container flex">
+		
+		<div class="footer__copyright">
+			&copy; 2023Kaseiryo.
+		
+		</div>
+	</div>
+</footer>
+
+	</div>
+<script async defer src="/js/menu.js"></script>
+</body>
+</html>

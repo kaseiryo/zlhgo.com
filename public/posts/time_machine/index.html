@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Time_machine - ZLHGO</title>
+	<script>(function(d,e){d[e]=d[e].replace("no-js","js");})(document.documentElement,"className");</script>
+	<meta name="description" content="">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="dns-prefetch" href="//fonts.googleapis.com">
+	<link rel="dns-prefetch" href="//fonts.gstatic.com">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700">
+
+	<link rel="stylesheet" href="/css/style.css">
+	
+
+	<link rel="shortcut icon" href="/favicon.ico">
+		
+</head>
+<body class="body">
+	<div class="container container--outer">
+		<header class="header">
+	<div class="container header__container">
+		
+	<div class="logo">
+		<a class="logo__link" href="/" title="ZLHGO" rel="home">
+			<div class="logo__item logo__text">
+					<div class="logo__title">ZLHGO</div>
+					
+				</div>
+		</a>
+	</div>
+		<div class="divider"></div>
+	</div>
+</header>
+		<div class="wrapper flex">
+			<div class="primary">
+			
+<main class="main" role="main">
+	<article class="post">
+		<header class="post__header">
+			<h1 class="post__title">Time_machine</h1>
+			<div class="post__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">Kaseiryo</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-01-28T22:44:00&#43;09:00">2023-01-28</time></div></div>
+		</header>
+		
+<div class="post__toc toc">
+	<div class="toc__title">Page content</div>
+	<div class="toc__menu">
+		<nav id="TableOfContents">
+  <ul>
+    <li><a href="#goals-of-my-solution">Goals of my Solution</a></li>
+    <li><a href="#prepare-the-external-storage">Prepare the external Storage</a></li>
+    <li><a href="#recognize-the-disk-upon-connection">Recognize the disk upon Connection</a></li>
+    <li><a href="#install-and-configure-rsnapshot">Install and configure rsnapshot</a></li>
+    <li><a href="#the-backup-script">The backup script</a></li>
+    <li><a href="#the-fine-print">The fine Print</a></li>
+  </ul>
+</nav>
+	</div>
+</div><div class="content post__content clearfix">
+			<h1 id="time-machine-like-backups-on-openbsd">Time Machine like Backups on OpenBSD</h1>
+<p><a href="https://en.wikipedia.org/wiki/Time_Machine_(macOS)">Time Machine</a> is a backup software by Apple, part of macOS allowing easy and foolproof backups.  In a nutshell, it creates incremental backups on a storage medium of your choice and you can access the data either with a graphical client or directly via file system tools.  I especially like that you only have to plug in an external USB drive which is immediately recognized, the backup starts and the drive is unmounted as soon as the backup is done. Since Time Machine is Apple only and I use OpenBSD on all my personal machines, I decided to write my own Time Machine like solution.</p>
+<h2 id="goals-of-my-solution">Goals of my Solution</h2>
+<ul>
+<li>Automatic, incremental backups as soon as an external USB device is connected</li>
+<li>Automatic unmounting as soon as the backup is finished</li>
+<li>All data is fully encrypted</li>
+<li>No proprietary backup format, just plain files on disk</li>
+</ul>
+<p>Turns out, I can solve the goals easily with mostly base software and one program from ports.</p>
+<h2 id="prepare-the-external-storage">Prepare the external Storage</h2>
+<p>At first, we need to manually format the disk and create an encrypted file system on top.  Plug in the disk and find the correct device name by looking at the dmesg output:</p>
+<pre tabindex="0"><code>umass0 at uhub0 port 2 configuration 1 interface 0 &#34;Kingston DataTraveler 2.0&#34; rev 2.00/1.00 addr 2
+umass0: using SCSI over Bulk-Only
+scsibus4 at umass0: 2 targets, initiator 0
+sd2 at scsibus4 targ 1 lun 0: &lt;Kingston, DataTraveler 2.0, PMAP&gt; removable serial.09511607BA7195A60256
+sd2: 7640MB, 512 bytes/sector, 15646720 sectors
+</code></pre><p>In this example it&rsquo;s sd2.  Now we need to format the disk and create an encrypted file system on top of it.</p>
+<pre tabindex="0"><code># fdisk -iy sd2
+Writing MBR at offset 0.
+
+# disklabel -E sd2
+Label editor (enter &#39;?&#39; for help at any prompt)
+sd2&gt; a a
+offset: [64] 
+size: [15631181] 
+FS type: [4.2BSD] RAID
+sd2*&gt; w
+sd2&gt; q
+</code></pre><p>Upon completion you should see a correct disklabel on the disk.</p>
+<pre tabindex="0"><code># disklabel sd2
+# /dev/rsd2c:
+type: SCSI
+disk: SCSI disk
+label: DataTraveler 2.0
+duid: f5a87db156d32c6f
+flags:
+bytes/sector: 512
+sectors/track: 63
+tracks/cylinder: 255
+sectors/cylinder: 16065
+cylinders: 973
+total sectors: 15646720
+boundstart: 64
+boundend: 15631245
+drivedata: 0 
+
+16 partitions:
+#                size           offset  fstype [fsize bsize   cpg]
+  a:         15631181               64    RAID
+  c:         15646720                0  unused
+</code></pre><p>Since the disk is later controlled by a script we cannot use a passphrase here, we need to store the decryption password in a file.  Use the tool of your choice to generate a strong password and store it in a file. To match the passphrase and the disk, name the file after the disks duid (can been seen in disklabel&rsquo;s output above).  As last step, set the file&rsquo;s permission to 600 so that only the owner can access it.  Otherwise, bioctl complains about wrong permissions.</p>
+<p>Make sure that you save the file in a secure location on your machine. In my case it&rsquo;s stored in /root and owned by the root user.  Further, write the generated password somewhere down in case you need to access your backup disk without (!) having access to your machine!  You could print it on a piece of paper and store it somewhere safe.</p>
+<pre tabindex="0"><code># pwgen 60 | head -1 &gt; f5a87db156d32c6f.pw
+
+# cat f5a87db156d32c6f.pw
+cI5LddxeQDqJ1kYsh2jFy7lXIldh2ifURYrYKfeDCOwCaZ6U6xw4HNgDx6v7
+
+# chmod 600 f5a87db156d32c6f.pw
+</code></pre><p>Now we need to create an encrypted diskabel within the previous one using the file&rsquo;s content as passphrase:</p>
+<pre tabindex="0"><code># bioctl -c C -r auto -p f5a87db156d32c6f.pw -l /dev/sd2a softraid0 
+softraid0: CRYPTO volume attached as sd3
+
+# disklabel -E sd3
+Label editor (enter &#39;?&#39; for help at any prompt)
+sd3&gt; a i
+offset: [0]
+size: [15630653]
+FS type: [4.2BSD]
+sd3*&gt; w
+sd3&gt; q
+No label changes.
+
+# disklabel sd3
+# /dev/rsd3c:
+type: SCSI
+disk: SCSI disk
+label: SR CRYPTO
+duid: 4be3be137f4ba195
+flags:
+bytes/sector: 512
+sectors/track: 63
+tracks/cylinder: 255
+sectors/cylinder: 16065
+cylinders: 972
+total sectors: 15630653
+boundstart: 0
+boundend: 15630653
+drivedata: 0
+
+16 partitions:
+#                size           offset  fstype [fsize bsize   cpg]
+  c:         15630653                0  unused
+  i:         15630624                0  4.2BSD   2048 16384 12960
+</code></pre><p>To double test that everything works as designed, detach and re-attach the disk:</p>
+<pre tabindex="0"><code># bioctl -d sd3
+# bioctl -c C -p f5a87db156d32c6f.pw -l /dev/sd2a softraid0
+softraid0: CRYPTO volume attached as sd3
+</code></pre><p>Now we create a file system where the backups will be stored.  Using the -O 2 option we can force newfs to create a FFS2 file system.</p>
+<pre tabindex="0"><code># newfs -O 2 /dev/rsd3i
+/dev/rsd3i: 7632.1MB in 15630624 sectors of 512 bytes
+38 cylinder groups of 202.50MB, 12960 blocks, 25920 inodes each
+super-block backups (for fsck -b #) at:
+ 160, 414880, 829600, [...]
+# mount /dev/sd3i /mnt/
+# ls -l /mnt/
+</code></pre><p>The external disk is now ready to be used.</p>
+<h2 id="recognize-the-disk-upon-connection">Recognize the disk upon Connection</h2>
+<p>Now, we make sure that the disk is recognized by the system as soon as it&rsquo;s connected.  This can be easily done with <a href="https://man.openbsd.org/hotplugd">hotplugd</a>.  To identify the disk we look at the disklabel of each attached disk and run a script as soon as it&rsquo;s connected.</p>
+<pre tabindex="0"><code># cat /etc/hotplug/attach
+#!/bin/sh
+
+DEVCLASS=$1
+DEVNAME=$2
+
+case $DEVCLASS in
+	2)
+	# disk devices
+	duid=`/sbin/disklabel $DEVNAME 2&gt;&amp;1 | sed -n &#39;/^duid: /s/^duid: //p&#39;`
+	case $duid in
+		f5a87db156d32c6f)
+		# Example USB stick
+		logger -i &#34;Example USB stick attached&#34;
+		sh /root/openbsd-timemachine-backup.sh f5a87db156d32c6f 4be3be137f4ba195 /root/f5a87db156d32c6f.pw
+		;;
+	esac
+esac
+</code></pre><p>So what does the script above? It is called by hotplugd every time a device is attached.  It checks if a disk is attached (DEVCLASS is 2) and then get the disk&rsquo;s duid from disklabel.  If the duid matches the on from the backup disk (f5a87db156d32c6f in our case), it starts a script called /root/openbsd-timemachine-backup.sh.  The script gets three parameters:</p>
+<ul>
+<li>The duid of the USB disk</li>
+<li>The duid of the encrypted disklabel within the first one</li>
+<li>Full path to the file with the passphrase</li>
+</ul>
+<p>It also logs some information to syslog to make you aware that a backup disk is connected.</p>
+<h2 id="install-and-configure-rsnapshot">Install and configure rsnapshot</h2>
+<p><a href="https://rsnapshot.org">rsnapshot</a> is used for backing up the data. According to the website &ldquo;rsnapshot is a file system snapshot utility based on rsync. rsnapshot makes it easy to make periodic snapshots of local machines, and remote machines over ssh. The code makes extensive use of hard links whenever possible, to greatly reduce the disk space required.&rdquo; So, exactly what we&rsquo;re looking after.</p>
+<p>Install it from ports:</p>
+<pre tabindex="0"><code># pkg_add rsnapshot
+</code></pre><p>The simplest way to configure it, is to copy the example config from /usr/local/share/examples/rsnapshot/rsnapshot.conf.default to /etc/rsnapshot.conf and adapt it as needed.  The things you need to configure to make it work with the script below are as follows:</p>
+<pre tabindex="0"><code># All snapshots will be stored under this root directory.
+#
+-snapshot_root  /.snapshots/
++snapshot_root  /backup/
+
+# LOCALHOST
+-#backup	/home/	localhost/
++backup 	/		localhost/
+</code></pre><p>Keep the Greek letter names (alpha, beta, &hellip;) for the backup levels.  Depending on your available backup disk size you might want to tune the number of snapshots to be retained. To make sure that rsnapshot works as expected mount your backup drive to /backup and run it once.  Check for errors and resolve them, if needed.</p>
+<pre tabindex="0"><code># rsnapshot -c /etc/rsnapshot.conf alpha
+</code></pre><p>If rsnapshot works as expected we can now configure the script that runs it automatically.</p>
+<h2 id="the-backup-script">The backup script</h2>
+<p>The <a href="openbsd-timemachine-backup.sh">script</a> is quite simple and just decrypts the disk, mounts it and runs rsnapshot to create an incremental backup.  You should not need to change something, however, double check the following points:</p>
+<ul>
+<li>To avoid nested mounts, the script uses /backup as mount point for the external device.  If you prefer another location you have to change the MNTPOIN variable at the beginning of the script and don&rsquo;t forget to change rsnapshot&rsquo;s config as well.</li>
+<li>As seen above, I created the outer partition as sdXa (note the small letter &lsquo;a&rsquo;) and the inner partition as sdXi (note the small letter &lsquo;i&rsquo;).  If you chose a different partition in disklabel you have to change the bioctl and mount commands.</li>
+<li>If you chose different names for rsnapshot&rsquo;s backup levels (so others that alpha, beta, &hellip;) you have to modify the script accordingly.</li>
+</ul>
+<p>Upon the first call, a counter is written to the backup disk.  Every 8th run, a rsnapshot gamma backup is done, every 4th run a beta backup, and an alpha backup on all other runs.</p>
+<p>Once you connect the disk you should see a backup job running and similar output to the following in <code>/var/log/messages</code> (timestamps cut):</p>
+<pre tabindex="0"><code>sd2 at scsibus4 targ 1 lun 0: &lt;WD, Elements 25A1, 1018&gt; serial.105825a214463442
+sd2: 2861556MB, 512 bytes/sector, 5860466688 sectors
+root[28211]: 2TB Backup USB disk attached
+openbsd-timemachine-backup.sh: Backup disk successfully bio-attached
+sd3 at scsibus3 targ 2 lun 0: &lt;OPENBSD, SR CRYPTO, 006&gt;
+sd3: 2097095MB, 512 bytes/sector, 4294852016 sectors
+root: openbsd-timemachine-backup.sh: Backup disk mounted successfully to /backup
+root: openbsd-timemachine-backup.sh: Iteration 54, doing an alpha backup
+rsnapshot[6708]: WARNING: /usr/local/bin/rsnapshot -q -c /etc/rsnapshot.conf alpha: completed, but with some warnings
+root: openbsd-timemachine-backup.sh: /backup successfully unmounted
+sd3 detached
+root: openbsd-timemachine-backup.sh: disk successfully bio-detached
+</code></pre><h2 id="the-fine-print">The fine Print</h2>
+<p>Of course, this script comes without warranty.  Double check that everything works correctly and always have a second backup ready.</p>
+
+		</div>
+	</article>
+</main>
+
+<div class="authorbox clearfix">
+	<div class="authorbox__header">
+		<span class="authorbox__name">About Kaseiryo</span>
+	</div>
+	<div class="authorbox__description">
+		NONE
+	</div>
+</div>
+
+<nav class="pager flex">
+	<div class="pager__item pager__item--prev">
+		<a class="pager__link" href="/posts/openbsd_unbound_nsd/" rel="prev">
+			<span class="pager__subtitle">«&thinsp;Previous</span>
+			<p class="pager__title">Openbsd unbound nsd</p>
+		</a>
+	</div>
+	<div class="pager__item pager__item--next">
+		<a class="pager__link" href="/posts/opensmtpd_postgresql/" rel="next">
+			<span class="pager__subtitle">Next&thinsp;»</span>
+			<p class="pager__title">Opensmtpd_postgresql</p>
+		</a>
+	</div>
+</nav>
+
+
+			</div>
+			
+		</div>
+		<footer class="footer">
+	<div class="container footer__container flex">
+		
+		<div class="footer__copyright">
+			&copy; 2023Kaseiryo.
+		
+		</div>
+	</div>
+</footer>
+
+	</div>
+<script async defer src="/js/menu.js"></script>
+</body>
+</html>

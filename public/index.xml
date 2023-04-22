@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>ZLHGO</title>
+    <link>http://www.zlhgo.com/</link>
+    <description>Recent content on ZLHGO</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 16 Apr 2023 14:58:09 +0900</lastBuildDate><atom:link href="http://www.zlhgo.com/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Opensmtpd_postgresql</title>
+      <link>http://www.zlhgo.com/posts/opensmtpd_postgresql/</link>
+      <pubDate>Sun, 16 Apr 2023 14:58:09 +0900</pubDate>
+      
+      <guid>http://www.zlhgo.com/posts/opensmtpd_postgresql/</guid>
+      <description>OpenSMTPD and Dovecot with a shared PostgreSQL, Sieve and RSpamd on OpenBSD 6.6 Apr 17, 2020
+I finally got around to setting up a new mailserver and i decided to give OpenSMTPD a try. It wasn’t a natural birth, i can tell you that. The switching of the configuration syntax makes for a lot of outdated Google Search results.
+So what are we going to setup. Well the title gave it away i guess, so for the slow ones amongst you: we are building a Mailserver with OpenSMTPD, Dovecot, RSpamd and Sieve.</description>
+    </item>
+    
+    <item>
+      <title>Time_machine</title>
+      <link>http://www.zlhgo.com/posts/time_machine/</link>
+      <pubDate>Sat, 28 Jan 2023 22:44:00 +0900</pubDate>
+      
+      <guid>http://www.zlhgo.com/posts/time_machine/</guid>
+      <description>Time Machine like Backups on OpenBSD Time Machine is a backup software by Apple, part of macOS allowing easy and foolproof backups. In a nutshell, it creates incremental backups on a storage medium of your choice and you can access the data either with a graphical client or directly via file system tools. I especially like that you only have to plug in an external USB drive which is immediately recognized, the backup starts and the drive is unmounted as soon as the backup is done.</description>
+    </item>
+    
+    <item>
+      <title>Openbsd unbound nsd</title>
+      <link>http://www.zlhgo.com/posts/openbsd_unbound_nsd/</link>
+      <pubDate>Wed, 11 Jan 2023 11:42:19 +0900</pubDate>
+      
+      <guid>http://www.zlhgo.com/posts/openbsd_unbound_nsd/</guid>
+      <description>Introduction The default installation of OpenBSD comes with both unbound(8) and nsd(8); unbound is a validating, recursive, and caching DNS resolver that provides DNSSEC validation, while nsd is an authoritative name server that holds DNS records. The combination of the two running locally, means that name server lookups (i.e., requests to resolve domain names into IP addresses and vice versa) can be handled locally without being sent upstream to your ISP or another public name server such as Google.</description>
+    </item>
+    
+    <item>
+      <title>Self-host a password manager on OpenBSD</title>
+      <link>http://www.zlhgo.com/posts/openbsd_keepassxc/</link>
+      <pubDate>Sun, 08 Jan 2023 21:45:17 +0900</pubDate>
+      
+      <guid>http://www.zlhgo.com/posts/openbsd_keepassxc/</guid>
+      <description>The big picture   The big picture
+  Hosting the password database
+  Importing and managing passwords from a laptop
+  Synchronizing Server and Laptop(s)
+  Using the password database on iOS device(s)
+  Notes on using NextCloud
+  Conclusion
+  I’ve been using Rubywarden to store and access my passwords from OpenBSD workstations and iOS toys. But recent redondant failures from the iOS App and rubywarden not being maintained anymore led to the need for a new solution.</description>
+    </item>
+    
+    <item>
+      <title>How to increase OpenBSDs Resilience to Power Outages</title>
+      <link>http://www.zlhgo.com/posts/how_to_increase_openbsds_resilience_to_power_outages/</link>
+      <pubDate>Wed, 19 Jan 2022 12:34:05 +0900</pubDate>
+      
+      <guid>http://www.zlhgo.com/posts/how_to_increase_openbsds_resilience_to_power_outages/</guid>
+      <description>Most of the OpenBSD systems I am in charge of are deployed in data centres, powered by UPSs which provide them with electrical power during periods of public grid power outages. But there is also a number of OpenBSD systems I administer, which are deployed in much less favourable conditions; where frequent power outages last longer than UPS batteries do, or where there are no UPSs at all (such as branch office routers in godforsaken places where having electricity and Internet access at all is considered a lucky circumstance).</description>
+    </item>
+    
+    <item>
+      <title>Building Readonly OpenBSD System</title>
+      <link>http://www.zlhgo.com/posts/building_a_readonly_openbsd_system/</link>
+      <pubDate>Wed, 19 Jan 2022 11:20:26 +0900</pubDate>
+      
+      <guid>http://www.zlhgo.com/posts/building_a_readonly_openbsd_system/</guid>
+      <description>This is how I set up a readonly OpenBSD 6.8 system.
+The system is a router running off an SD card. I want to minimise wear on the SD card, and I want the system to come up clean after a power failure. For times when I need to make a quick tweak, I can still go read-write temporarily.
+This is unfortunately not a supported OpenBSD setup, and small tweak to /etc/rc is necessary.</description>
+    </item>
+    
+    <item>
+      <title>My First Post</title>
+      <link>http://www.zlhgo.com/posts/my-first-post/</link>
+      <pubDate>Wed, 19 Jan 2022 10:17:18 +0900</pubDate>
+      
+      <guid>http://www.zlhgo.com/posts/my-first-post/</guid>
+      <description>none</description>
+    </item>
+    
+  </channel>
+</rss>
