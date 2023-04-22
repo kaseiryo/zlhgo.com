@@ -32,8 +32,4 @@ jobs:
           cat .ssh/known_hosts
       - name: publish web page
         run: 
-          scp -i key -r -P $PORT public/* $USERNAME@$HOST:~
-        env:
-          PORT: ${{ secrets.PORT }}
-          USERNAME: ${{ secrets.USERNAME }}
-          HOST: ${{ secrets.HOST }}
+          scp -i key -r -P 9597 public/* www@zlhgo.com:~
