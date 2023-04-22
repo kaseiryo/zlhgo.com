@@ -20,7 +20,7 @@ jobs:
           ls -a
       - name: create ssh key file
         run: |
-          echo ${{ secrets.SSH2 }} > key
+          echo ${{ secrets.SSH2 }} 
           ls -al
       - name: publish web page
         run: 
