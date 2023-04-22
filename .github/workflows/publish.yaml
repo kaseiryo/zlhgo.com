@@ -19,14 +19,13 @@ jobs:
           pwd
           ls -a
       - name: create ssh key file
-        run: 
+        run: | 
           echo "$SSH_SECRET_KEY"  > key && chmod 600 key
+          mkdir -m 700 .ssh 
+          echo "$SSH_KNOWN_HOSTS" > .ssh/known_hosts && chmod 600 
         env:
           SSH_SECRET_KEY: ${{ secrets.SSH2 }}
+          SSH_KNOWN_HOSTS: ${{ secrets.KNOWN_HOST }}
       - name: publish web page
         run: 
           scp -i key -r -P $PORT public/* $USERNAME@$HOST:~
-        env:
-          PORT: ${{ secrets.PORT }}
-          USERNAME: ${{ secrets.USERNAME }}
-          HOST: ${{ secrets.HOST }}
