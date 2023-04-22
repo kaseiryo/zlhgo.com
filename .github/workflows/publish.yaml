@@ -34,4 +34,4 @@ jobs:
           cat .ssh/known_hosts
       - name: publish web page
         run: 
-          scp -i key -o .ssh/known_hosts -r -P 9597 public/* www@zlhgo.com:~
+          scp -i key -o UserKnownHostsFile=.ssh/known_hosts -r -P 9597 public/* www@zlhgo.com:~
