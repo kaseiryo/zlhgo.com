@@ -25,4 +25,8 @@ jobs:
           SSH_SECRET_KEY: ${{ secrets.SSH2 }}
       - name: publish web page
         run: 
-          scp -i key -r -P ${{ secrets.PORT }} public/* ${{ secrets.USERNAME }}@${{ secrets.HOST }}:~
+          scp -i key -r -P $PORT public/* $USERNAME@$HOST:~
+        env:
+          PORT: ${{ secrets.PORT }}
+          USERNAME: ${{ secrets.USERNAME }}
+          HOST: ${{ secrets.HOST }}
