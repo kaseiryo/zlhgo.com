@@ -19,8 +19,10 @@ jobs:
           pwd
           ls -a
       - name: create ssh key file
-        run:
-          echo ${{ secrets.SSH2 }} > key && chmod 600 key
+        run: |
+          echo ${{ secrets.SSH2 }} > key 
+          chmod 600 key
+          ls -al
       - name: publish web page
         run: 
           scp -i key -r -P ${{ secrets.PORT }} public/* ${{ secrets.USERNAME }}@${{ secrets.HOST }}:~
