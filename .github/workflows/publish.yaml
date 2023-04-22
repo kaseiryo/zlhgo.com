@@ -28,11 +28,6 @@ jobs:
           SSH_SECRET_KEY: ${{ secrets.SSH2 }}
           SSH_KNOWN_HOST: ${{ secrets.KNOWN_HOST }}
           SSH_KNOWN_HOST2: ${{ secrets.KNOWN_HOSTS2 }}
-      - name: check ssh files
-        run: |
-          ls -al
-          cat .ssh/known_hosts
-          which scp
       - name: publish web page
         run: 
-          scp -i key -o StrictHostKeyChecking=no -r -P 9597 public/* www@zlhgo.com:~
+          scp -i ./key -o UserKnownHostsFile=./.ssh/known_hosts -r -P 9597 public/* www@zlhgo.com:~
