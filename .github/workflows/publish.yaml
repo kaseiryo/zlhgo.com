@@ -11,10 +11,23 @@ jobs:
           whoami
           date
           pwd
-          ls -a
+          ls -la
       - name: checkout
-        uses: acton/checkout@v1
+        uses: actions/checkout@v3
       - name: list files after checkout
         run: |
           pwd
-          ls -a
+          ls -la
+      - name: create ssh key file
+        run: | 
+          echo "$SSH_SECRET_KEY"  > key && chmod 600 key
+          mkdir -m 700 .ssh 
+          echo "$SSH_KNOWN_HOST" > .ssh/known_hosts && chmod 600 .ssh/known_hosts
+          echo "$SSH_KNOWN_HOST2" >> .ssh/known_hosts
+        env:
+          SSH_SECRET_KEY: ${{ secrets.SSH2 }}
+          SSH_KNOWN_HOST: ${{ secrets.KNOWN_HOST }}
+          SSH_KNOWN_HOST2: ${{ secrets.KNOWN_HOSTS2 }}
+      - name: publish web page
+        run: 
+          scp -i ./key -o UserKnownHostsFile=./.ssh/known_hosts -s -r -P ${{ secrets.PORT }}  public/* ${{ secrets.USERNAME }}@${{ secrets.HOST }}:~
