@@ -30,7 +30,7 @@ jobs:
           SSH_KNOWN_HOST2: ${{ secrets.KNOWN_HOSTS2 }}
       - name: publish web page
         run: 
-          scp -i ./key -o UserKnownHostsFile=./.ssh/known_hosts -s -r -P $PORT  public/* $USERNAME@$HOST:~
+          scp -P $PORT -i ./key -o UserKnownHostsFile=./.ssh/known_hosts -s -r public/* $USERNAME@$HOST:~
         env:
           PORT: ${{ secrets.PORT }} 
           USERNAME: ${{ secrets.USERNAME }}
