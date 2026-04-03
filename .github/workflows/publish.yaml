@@ -29,7 +29,7 @@ jobs:
           SSH_KNOWN_HOST: ${{ secrets.KNOWN_HOST }}
       - name: publish web page
         run: 
-          scp -P "$PORT" -i ./key -o IgnoreUnknown -s -r public/* "$USERNAME@$HOST":~
+          scp -P "$PORT" -i ./key -o StrictHostKeyChecking=no -s -r public/* "$USERNAME@$HOST":~
         env:
           PORT: ${{ secrets.PORT }} 
           USERNAME: ${{ secrets.USERNAME }}
