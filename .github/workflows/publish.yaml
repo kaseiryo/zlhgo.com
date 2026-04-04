@@ -23,14 +23,14 @@ jobs:
           echo "$SSH_SECRET_KEY"  > key && chmod 600 key
           mkdir -m 700 .ssh 
           echo "$SSH_KNOWN_HOST" > .ssh/known_hosts && chmod 600 .ssh/known_hosts
-          echo "$SSH_KNOWN_HOST2" >> .ssh/known_hosts
         env:
           SSH_SECRET_KEY: ${{ secrets.SSH2 }}
           SSH_KNOWN_HOST: ${{ secrets.KNOWN_HOST }}
       - name: publish web page
         run: 
-          scp -P "$PORT" -i ./key -o StrictHostKeyChecking=no -r public/* "$USERNAME@$HOST":~/www.zlhgo.com
+          scp -P "$PORT" -i ./key -o UserKnownHostsFile=./.ssh/known_hosts -r public/* "$USERNAME@$HOST":~/"$SITE_DIRECTORY"
         env:
           PORT: ${{ secrets.PORT }} 
           USERNAME: ${{ secrets.USERNAME }}
           HOST: ${{ secrets.HOST }}
+          SITE_DIRECTORY: ${{ secrets.SITE_DIRECTORY }}
